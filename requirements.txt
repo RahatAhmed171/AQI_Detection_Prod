@@ -1,0 +1,7 @@
+fastapi==0.138.1
+uvicorn==0.49.0
+torch==2.12.1
+torchvision==0.27.1
+pillow==12.2.0
+huggingface_hub==1.21.0
+python-multipart==0.0.32
