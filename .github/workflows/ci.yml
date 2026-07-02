@@ -28,7 +28,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Verify application imports
+      - name: Run tests
+        run: |
+          pytest -v
+
+      - name: Import application
         run: |
           python -c "from app import app; print('Application imported successfully')"
 
