@@ -1,3 +1,5 @@
+from logger import logger
+import time
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from PIL import Image
 import io
@@ -17,6 +19,7 @@ def root():
 
 @app.post("/predict")
 async def predict_image(file: UploadFile = File(...)):
+    logger.info("Prediction request received")
 
     if not file.content_type.startswith("image/"):
         raise HTTPException(
@@ -25,10 +28,18 @@ async def predict_image(file: UploadFile = File(...)):
         )
 
     contents = await file.read()
+    try:
+        image = Image.open(io.BytesIO(contents))
+        start = time.perf_counter()
+        result = predict(image)
+        elapsed = time.perf_counter() - start
+        logger.info(f"Prediction: {result['prediction']} | Confidence: {result['confidence']}%")
+        return result
 
-    image = Image.open(io.BytesIO(contents))
-    result = predict(image)
+    except Exception:
 
-    return result
+    logger.exception("Prediction failed")
+
+    raise
 
     
