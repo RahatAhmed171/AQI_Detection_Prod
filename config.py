@@ -1,6 +1,9 @@
 MODEL_REPO = "Rahat171/AQI_Detection"
 
-MODEL_FILENAME = "best_aqi_model.pth"
+MODEL_FILES = {
+    "v1": "best_aqi_model_v1.pth",
+    "v2": "best_aqi_model_v2.pth"
+}
 
 CLASS_NAMES = [
     "a_Good",

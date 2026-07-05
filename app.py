@@ -1,6 +1,6 @@
 from logger import logger
 import time
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException,Query
 from PIL import Image
 import io
 
@@ -18,8 +18,13 @@ def root():
     }
 
 @app.post("/predict")
-async def predict_image(file: UploadFile = File(...)):
+async def predict_image(version: str = Query("v1"),file: UploadFile = File(...)):
     logger.info("Prediction request received")
+    if version not in ["v1", "v2"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid model version."
+        )
 
     if not file.content_type.startswith("image/"):
         raise HTTPException(
@@ -31,15 +36,15 @@ async def predict_image(file: UploadFile = File(...)):
     try:
         image = Image.open(io.BytesIO(contents))
         start = time.perf_counter()
-        result = predict(image)
+        result = predict(image,version)
         elapsed = time.perf_counter() - start
-        logger.info(f"Prediction: {result['prediction']} | Confidence: {result['confidence']}%")
+        logger.info(f"Prediction: {result['prediction']} | "f"Confidence: {result['confidence']}% | "f"Inference Time: {elapsed:.3f}s")
         return result
 
     except Exception:
 
-    logger.exception("Prediction failed")
+        logger.exception("Prediction failed")
 
-    raise
+        raise
 
     

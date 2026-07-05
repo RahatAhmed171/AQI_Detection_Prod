@@ -1,6 +1,6 @@
 from config import (
     MODEL_REPO,
-    MODEL_FILENAME,
+     MODEL_FILES,
     CLASS_NAMES
 )
 
@@ -17,24 +17,37 @@ val_test_transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406],
                          std=[0.229, 0.224, 0.225])
 ])
-MODEL_PATH = hf_hub_download(
-    repo_id=MODEL_REPO,
-    filename=MODEL_FILENAME
-)
+def load_model(version: str):
 
-model = AQIClassifier(num_classes=6, patch_size=14)
+    filename = MODEL_FILES[version]
 
-model.load_state_dict(
-    torch.load(MODEL_PATH, map_location="cpu")
-)
+    MODEL_PATH = hf_hub_download(
+        repo_id=MODEL_REPO,
+        filename=filename
+    )
 
-model.eval()
+    model = AQIClassifier(
+        num_classes=6,
+        patch_size=14
+    )
+
+    model.load_state_dict(
+        torch.load(
+            MODEL_PATH,
+            map_location="cpu"
+        )
+    )
+
+    model.eval()
+
+    return model
 
 
 
-def predict(image: Image.Image):
+def predict(image: Image.Image,version: str):
     image = val_test_transform(image)
     image = image.unsqueeze(0)
+    model = load_model(version)
 
     with torch.no_grad():
         outputs = model(image)
@@ -46,6 +59,7 @@ def predict(image: Image.Image):
         confidence = probabilities.max().item()
 
     return {
+    "model_version": version,
     "prediction": CLASS_NAMES[predicted],
     "confidence": round(confidence * 100, 2)
      }
